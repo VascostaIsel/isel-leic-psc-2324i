@@ -4,7 +4,7 @@
 void dictionary_add(Dictionary *dictionary, const char *filename) {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
-        printf("Failed to open file: %s", filename);
+        printf("\nFailed to open file: %s\n", filename);
         return;
     }
 

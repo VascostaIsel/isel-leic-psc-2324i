@@ -32,18 +32,13 @@ int main() {
 		int received_result;
 		int result = invoke_and_test(&received_result, (void (*)())dictionary_lookup, 2, test_array[i].dictionary, test_array[i].word);
 		if (result != 0) {
-			printf("Your function currupted %s, that is a calee saved register\n",
-				register_name[result]);
+			printf("Your function currupted %s, that is a calee saved register\n", register_name[result]);
 			break;
 		}
-		if (received_result != test_array[i].expected_result) {
-			printf("[%zd] Failed - Received: %d Expected: %d\n",
-				i, received_result, test_array[i].expected_result);
-		}
-		else {
-			printf("[%zd] Passed - Received: %d Expected: %d\n",
-				i, received_result, test_array[i].expected_result);
-		}
+		if (received_result != test_array[i].expected_result) 
+			printf("[%zd] Failed - Received: %d Expected: %d\n", i, received_result, test_array[i].expected_result);
+		else 
+			printf("[%zd] Passed - Received: %d Expected: %d\n", i, received_result, test_array[i].expected_result);
 	}
 	g_hash_table_destroy(words);
 }
