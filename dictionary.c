@@ -1,6 +1,12 @@
 #include "dictionary.h"
 #include <stdio.h>
 
+Dictionary *dictionary_create() {
+    Dictionary *dictionary = g_new(Dictionary, 1);
+    dictionary->words = g_hash_table_new(g_str_hash, g_str_equal);
+    return dictionary;
+}
+
 void dictionary_add(Dictionary *dictionary, const char *filename) {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
