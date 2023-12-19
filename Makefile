@@ -1,13 +1,13 @@
 .PHONY: static dynamic clean
 
-dynamic: bin/dictionaryLib.so
+dynamic: bin/libDictionary.so
 
-static: bin/dictionaryLib.a
+static: bin/libDictionary.a
 
-bin/dictionaryLib.so: dictionary.o
+bin/libDictionary.so: dictionary.o
 	gcc -shared -g -o $@ dictionary.o
 	
-bin/dictionaryLib.a: dictionary.o
+bin/libDictionary.a: dictionary.o
 	ar rcs $@ dictionary.o
 
 dictionary.o: dictionary.c bin/dictionary.h
@@ -15,5 +15,5 @@ dictionary.o: dictionary.c bin/dictionary.h
 
 clean:
 	rm -f dictionary.o
-	rm -f bin/dictionaryLib.so
-	rm -f bin/dictionaryLib.a
+	rm -f bin/libDictionary.so
+	rm -f bin/libDictionary.a
