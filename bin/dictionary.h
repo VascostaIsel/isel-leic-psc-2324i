@@ -7,7 +7,7 @@ typedef struct Dictionary {
 	GHashTable* words;
 } Dictionary;
 
-//Dictionary *dictionary_create();
+Dictionary *dictionary_create();
 
 void dictionary_add(Dictionary *dictionary, const char *filename);
 
