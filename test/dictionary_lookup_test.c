@@ -1,5 +1,4 @@
 #include <stdio.h>
-
 #include "dictionary.h"
 
 const char *register_name[] = { "", "rbp", "rbx", "r15", "r14", "r13", "r12" };

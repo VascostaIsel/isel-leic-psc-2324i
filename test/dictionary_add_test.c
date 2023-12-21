@@ -1,5 +1,4 @@
 #include <stdio.h>
-
 #include "dictionary.h"
 
 const char *register_name[] = { "", "rbp", "rbx", "r15", "r14", "r13", "r12" };
@@ -58,26 +57,26 @@ int main() {
     test_array[1].expected_result = words2;
 
 	for (size_t i = 0; i < ARRAY_SIZE(test_array); i++) {
-		GHashTable *initialWords = g_hash_table_new(g_str_hash, g_str_equal);
-		Dictionary *initialDictionary = &(Dictionary){ .words = initialWords };
+		GHashTable *test_words = g_hash_table_new(g_str_hash, g_str_equal);
+		Dictionary *test_dictionary = &(Dictionary){ .words = test_words };
 		
 		int received_result;
-		int result = invoke_and_test(&received_result, (void (*)())dictionary_add, 2, initialDictionary, test_array[i].fileName);
+		int result = invoke_and_test(&received_result, (void (*)())dictionary_add, 2, test_dictionary, test_array[i].fileName);
 		if (result != 0) {
 			printf("Your function currupted %s, that is a calee saved register\n", register_name[result]);
 			break;
 		}
-		if (compare_hash_tables(initialDictionary->words, test_array[i].expected_result) == 1) {
+		if (compare_hash_tables(test_dictionary->words, test_array[i].expected_result) == 1) {
 			printf("[%zd] Failed\n", i);
 			printf("Received: ");
-            print_hash_table(initialDictionary->words);
+            print_hash_table(test_dictionary->words);
             printf("\nExpected: ");
             print_hash_table(test_array[i].expected_result);
 		}
 		else {
 			printf("[%zd] Passed\n", i);
 			printf("Received: ");
-            print_hash_table(initialDictionary->words);
+            print_hash_table(test_dictionary->words);
             printf("\nExpected: ");
             print_hash_table(test_array[i].expected_result);
 		}
