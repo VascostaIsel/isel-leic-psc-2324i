@@ -22,12 +22,16 @@ void dictionary_add(Dictionary *dictionary, const char *filename) {
         }
 
         if (dictionary_lookup(dictionary, line) == 0) {
-        	g_hash_table_add(dictionary->words, g_strdup(line));
-        }       
+            g_hash_table_add(dictionary->words, g_strdup(line));
+        }
     }
     fclose(file);
 }
 
 int dictionary_lookup(Dictionary *dictionary, const char *word) {
-	return 0;
+    return g_hash_table_contains(dictionary->words, word);
+}
+
+void dictionary_destroy(Dictionary *dictionary) {
+    g_hash_table_destroy(dictionary->words);
 }
