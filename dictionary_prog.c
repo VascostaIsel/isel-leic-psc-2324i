@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <./bin/dictionary.h>
+#include <dictionary_proh.h>
 
 #define MAX_WORD_SIZE 32
 #define SIZE_INCREMENT 64   //  Bytes, needs adjustment for structs
@@ -9,82 +10,103 @@
 //  Needs size calculation to adjust increment
 //  Would theoretically be 4 + 4 + 1 = 9 bytes
 //  So to store 64 more structs we would need 64 * 9 = 576 bytes
+
 typedef struct {
     int row;
     int col;
-    char actualWord[MAX_WORD_SIZE];
-} Word;
-
-typedef struct {
-  size_t used;
-  size_t size;
-  char list[][SIZE_INCREMENT];
-} List;
-
-List * addString(List * listToUpdate , const char *str){
-    size_t newSize;
-
-    //  Checks if list is full or is null, reallocates more memory
-    if(!listToUpdate || listToUpdate->size == listToUpdate->used){
-        newSize = listToUpdate ? listToUpdate -> size + SIZE_INCREMENT : SIZE_INCREMENT;    //  In bytes (1 char = 1 byte, adjust to struct)
-        listToUpdate = realloc(listToUpdate, sizeof(*listToUpdate) + newSize * sizeof(listToUpdate -> list[0]));
-        listToUpdate -> size = newSize;
-        listToUpdate -> used = newSize == SIZE_INCREMENT ? 0 : listToUpdate -> used;
-    }
-
-    //  Adds to the list, increments used
-    if(listToUpdate){
-        strncpy(listToUpdate -> list[listToUpdate -> used], str, sizeof(listToUpdate->list[0]));
-        listToUpdate -> list[listToUpdate -> used][sizeof(listToUpdate -> list[0])-1] = 0;
-        listToUpdate -> used++;
-    }
-    return listToUpdate;
-}
+} Pair;
 
 int main(int argc, char *argv[]){
-    int isFile = 0;
-    char * fileName;
-    int isWord = 0;
-    char * word;
+    int is_file = 0;
+    int is_word = 0;
+
+    char * text_to_check[128];
+
+    GList * dictionary_name_list;
+    char * word[32];
     
-    char * textOrWord[1];
-    for(int i = 1; i < argc; ++i) {
-        if(isFile && isWord){
+    for (int i = 1; i < argc; ++i) {
+        if (is_file && is_word){
             perror("An error occurred: Cannot have both -t and -w arguments. Please use one or the other.\n");
             return(-1);
-        }else{
+        }
+        else{
+            //  Done
             if(strcmp(argv[i], "-t") == 0){
                 printf("%s\n", argv[i+1]);
-                fileName = argv[i+1];
-                isFile = 1;
+                text_to_check = argv[i+1];
+                is_file = 1;
+
+            //  Done
             }else if(strcmp(argv[i], "-w") == 0){
                 printf("%s\n", argv[i+1]);
                 word = argv[i+1];
-                isWord = 1;
+                is_word = 1;
+
+            //  Done
             }else if(strcmp(argv[i], "-d") == 0){
                 printf("%s\n", argv[i+1]);
+                dictionary_name_list = g_list_append(dictionary_name_list, g_strdup(argv[i+1]));
             }
         }
     }
     
-    if(isFile){
-        char * missingWords = checkIfExistsInDictionary(fileName, );
+    //  Done
+    if (isFile) {
+        GHashTable * missing_words;
+        for (dictionary = dictionary_name_list; dictionary != NULL; dictionary = g_list_next(dictionary_name_list)) {
+            missing_words = check_if_file_in_dictionary(text_to_check, dictionary, missing_words)
+        }
+        if (g_hash_table_size(missing_words) == 0) {
+            printf("Every word of the File %s is in all of the dictionaries\n", text_to_check);
+        } else {
+            printf("The following words are not in the dictionaries:\n");
+            g_hash_table_foreach(missing_words, print_word, NULL);
+        }
+        g_hash_table_destroy(missing_words);
+    } else {
+        int is_word_in_dictionary = 0;
+        for (elem = dictionary_name_list; elem; elem = g_list_next(dictionary_name_list)) {
+            is_word_in_dictionary += _dictionary(word, dictionary_name_elem->data);
+        }
+        if (is_word_in_dictionary == 0) {
+            printf("Word %s is not in any of the dictionaries\n", word);
+        } else {
+            printf("Word %s is in at least one of the dictionaries\n", word);
+        }
     }
+    g_list_free(dictionary_name_list);
 
     return 0;
 }
 
-//  f = number of files
-//  w = number of words
-//  O(f*w)
+void print_word(gpointer key, gpointer value, gpointer user_data) {
+    const gchar *word = (const gchar *)key;
+    Pair *pair = (Pair *)value;
+    
+    printf("%s - %d/%d\n", word, pair->row, pair->col);
+}
 
-List * checkIfExistsInDictionary(const char * textFileToCheck, const char * dictionaryFileContributor){
+int check_if_word_in_dictionary(const char *word_to_check, const char *dictionary_file_contributor) {
+    //  Creates dictionary based on param file
+    Dictionary * dic = dictionary_create();
+    dictionary_add(dic, dictionary_file_contributor);
 
-    FILE * textFilePtr;
-    textFilePtr = fopen(textFileToCheck, "r");
+    int result = dictionary_lookup(dic, word_to_check);
 
-    if(textFilePtr == NULL) {
-        printf("\nFailed to open file: %s\n", textFileToCheck);
+    //  Frees memory
+    dictionary_destroy(dic);
+
+    return result;
+}
+
+//  GHashTable<String, Pair(row, col)> missing_words
+GHashTable *check_if_file_in_dictionary(const char *file_to_check, const char *dictionary_file_contributor, GHashTable *missing_words) {
+
+    FILE *file_ptr;
+    file_ptr = fopen(file_to_check, "r");
+    if (file_ptr == NULL) {
+        printf("\nFailed to open file: %s\n", file_to_check);
         return NULL;
     }
 
@@ -93,23 +115,30 @@ List * checkIfExistsInDictionary(const char * textFileToCheck, const char * dict
 
     //  Creates dictionary based on param file
     Dictionary * dic = dictionary_create();
-    dictionary_add(dic, dictionaryFileContributor);
+    dictionary_add(dic, dictionary_file_contributor);
 
     int row = 0;
     int col = 0;
+    Pair coords = {0, 0};
 
-    List * missingWords;
-
-    while(fscanf(textFilePtr, "%99s", word) == 1) {
-        if(strcmp(word, "\n") == 0){
+    //  Static 32 chars but could be changed
+    while (fscanf(file_ptr, "%32s", word) == 1) {
+        if (strcmp(word, "\n") == 0) {
             row += 1;
             col = 0;
-        }else{
+        } else {
+            if (dictionary_lookup(dic->words, word) == 0) {
+                coords->row = row;
+                coords->col = col;
+                dictionary_add(missing_words, coords);
+            }
             col += 1;
         }
     }
 
-    fclose(textFilePtr);
+    //  Frees memory and closes file
+    fclose(file_ptr);
+    dictionary_destroy(dic);
 
     return missingWords;
 }
