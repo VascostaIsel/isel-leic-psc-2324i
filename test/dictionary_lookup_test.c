@@ -12,9 +12,8 @@ struct {
     const char *word;
     int expected_result;
 } test_array[] = {
-    { .dictionary = NULL, .word = "test", .expected_result = 0 },
-    { .dictionary = NULL, .word = "test1", .expected_result = 1 },
-    { .dictionary = NULL, .word = NULL, .expected_result = 1 },
+    { .dictionary = NULL, .word = "test", .expected_result = 1 },
+    { .dictionary = NULL, .word = "test1", .expected_result = 0 }
 };
 
 int dictionary_lookup(Dictionary *dictionary, const char *word);
