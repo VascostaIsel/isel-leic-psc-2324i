@@ -11,4 +11,4 @@ echo "RUNNING dictionary_lookup_test"
 
 echo ""
 echo "RUNNING dictionary_destroy_test"
-#./dictionary_destroy_test
+./dictionary_destroy_test
