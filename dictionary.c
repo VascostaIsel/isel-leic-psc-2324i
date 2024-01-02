@@ -34,4 +34,5 @@ int dictionary_lookup(Dictionary *dictionary, const char *word) {
 
 void dictionary_destroy(Dictionary *dictionary) {
     g_hash_table_destroy(dictionary->words);
+    g_free(dictionary);
 }
